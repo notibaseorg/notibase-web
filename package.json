@@ -1,0 +1,61 @@
+{
+  "name": "@notibase/web",
+  "version": "0.4.1",
+  "description": "Notibase browser SDK \u2014 web push, in-app messages, an in-app inbox and attribution, in one small script",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "static",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/notibaseorg/notibase-web.git"
+  },
+  "bugs": {
+    "url": "https://github.com/notibaseorg/notibase-web/issues"
+  },
+  "homepage": "https://notibase.dev/web.html",
+  "keywords": [
+    "push-notifications",
+    "web-push",
+    "push",
+    "notifications",
+    "service-worker",
+    "in-app-messages",
+    "in-app-inbox",
+    "firebase",
+    "onesignal",
+    "onesignal-alternative",
+    "messaging",
+    "browser",
+    "notibase"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/bundle.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests",
+    "prepublishOnly": "tsc -p tsconfig.json && node scripts/bundle.mjs",
+    "bundle": "node scripts/bundle.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0",
+    "@types/node": "^22.0.0"
+  }
+}
