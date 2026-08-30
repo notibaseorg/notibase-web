@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Live demo — Notibase</title>
+<meta name="description" content="Subscribe this browser and send yourself a real push notification. No signup, no terminal.">
+<link rel="canonical" href="https://notibase.com/sdk/demo.html">
+<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0d0e16">
+<style>
+:root{
+  color-scheme:light;
+  --brand:#6366f1; --brand-deep:#4f46e5; --brand-soft:#eef2ff;
+  --ink:#0f1222; --ink-2:#4b4f63; --ink-3:#8a8ea3;
+  --bg:#ffffff; --bg-2:#f7f8fb; --line:#e7e8ef;
+  --ok:#16a34a; --ok-soft:#dcfce7; --bad:#dc2626; --bad-soft:#fee2e2;
+  --radius:14px;
+  --shadow:0 1px 2px rgba(15,18,34,.05),0 8px 28px rgba(15,18,34,.07);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    color-scheme:dark;
+    --brand:#818cf8; --brand-deep:#6366f1; --brand-soft:#1e2142;
+    --ink:#f2f3f8; --ink-2:#b9bccc; --ink-3:#7d8098;
+    --bg:#0d0e16; --bg-2:#13141f; --line:#252738;
+    --ok:#34d399; --ok-soft:#06301f; --bad:#f87171; --bad-soft:#3d1414;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 28px rgba(0,0,0,.35);
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased}
+a{color:var(--brand-deep);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:760px;margin:0 auto;padding:0 24px}
+header{border-bottom:1px solid var(--line);padding:18px 0}
+header .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;color:var(--ink)}
+.logo img{width:26px;height:26px;border-radius:7px}
+main{padding:44px 0 72px}
+h1{font-size:1.9rem;line-height:1.2;margin:0 0 10px;letter-spacing:-.02em}
+.sub{color:var(--ink-2);margin:0 0 30px;font-size:1.03rem}
+
+.steps{display:flex;flex-direction:column;gap:14px}
+.step{border:1px solid var(--line);border-radius:var(--radius);background:var(--bg-2);
+  padding:20px 22px;box-shadow:var(--shadow);position:relative}
+.step[data-done="1"]{border-color:color-mix(in srgb,var(--ok) 40%,var(--line))}
+.step h2{font-size:1.02rem;margin:0 0 4px;display:flex;align-items:center;gap:10px}
+.num{display:grid;place-items:center;width:24px;height:24px;border-radius:99px;flex:0 0 auto;
+  background:var(--brand-soft);color:var(--brand-deep);font-size:.8rem;font-weight:700}
+.step[data-done="1"] .num{background:var(--ok);color:#fff}
+.step p{margin:0;color:var(--ink-2);font-size:.92rem}
+.step .body{margin-top:14px}
+.step[data-state="idle"] .body{display:none}
+
+button{font:inherit;font-weight:600;font-size:.95rem;padding:11px 20px;border:0;border-radius:10px;
+  background:var(--brand);color:#fff;cursor:pointer;transition:filter .12s}
+button:hover:not(:disabled){filter:brightness(1.07)}
+button:disabled{opacity:.45;cursor:default}
+button.ghost{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+
+.msg{margin-top:12px;font-size:.9rem}
+.msg.ok{color:var(--ok);font-weight:600}
+.msg.bad{color:var(--bad);font-weight:600}
+.hint{margin-top:10px;font-size:.86rem;color:var(--ink-3)}
+
+label{display:block;font-size:.82rem;font-weight:600;margin:12px 0 5px;color:var(--ink-2)}
+input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--bg);
+  color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.84rem}
+pre{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:14px;
+  overflow-x:auto;font-size:.79rem;line-height:1.55;margin:10px 0 0;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+details summary{cursor:pointer;font-size:.9rem;color:var(--ink-2);font-weight:600}
+details[open] summary{margin-bottom:8px}
+
+.preview{display:flex;gap:12px;align-items:flex-start;background:var(--bg);border:1px solid var(--line);
+  border-radius:12px;padding:13px 15px;box-shadow:var(--shadow);max-width:400px;margin-top:14px}
+.preview .ic{width:38px;height:38px;border-radius:9px;flex:0 0 auto;
+  background:linear-gradient(135deg,var(--brand),var(--brand-deep))}
+.preview b{display:block;font-size:.9rem}
+.preview span{font-size:.85rem;color:var(--ink-2)}
+.preview small{display:block;color:var(--ink-3);font-size:.75rem;margin-top:5px}
+
+.cta-band{margin-top:38px;padding:26px;border-radius:var(--radius);background:var(--brand-soft);
+  border:1px solid color-mix(in srgb,var(--brand) 25%,var(--line));text-align:center}
+.cta-band h3{margin:0 0 6px;font-size:1.1rem}
+.cta-band p{margin:0 0 14px;color:var(--ink-2);font-size:.93rem}
+.note{color:var(--ink-3);font-size:.84rem;margin-top:30px;padding-top:22px;border-top:1px solid var(--line)}
+footer{border-top:1px solid var(--line);padding:22px 0;color:var(--ink-3);font-size:.86rem}
+</style>
+</head>
+<body>
+
+<header><div class="wrap">
+  <a class="logo" href="https://notibase.com"><img src="/favicon.svg" alt="">Notibase</a>
+  <nav><a href="https://notibase.dev">Docs</a> · <a href="https://app.notibase.com">Console</a></nav>
+</div></header>
+
+<main class="wrap">
+  <h1>Send yourself a push notification.</h1>
+  <p class="sub">
+    Two clicks, no signup, no terminal. This page uses the same
+    <a href="https://notibase.dev/web.html">web SDK</a> your site would — the notification
+    arrives even if you close the tab, which is the part people don't believe until they see it.
+  </p>
+
+  <div class="steps">
+
+    <div class="step" id="s1" data-state="ready">
+      <h2><span class="num" id="n1">1</span> Subscribe this browser</h2>
+      <p>Your browser will ask for permission. Nothing is stored beyond a push subscription we can
+        delete on request — no email, no account.</p>
+      <div class="body">
+        <div id="byo" style="display:none">
+          <p class="hint">This deployment has no demo app configured, so bring your own keys from
+            the console — Settings → Push platforms → Web push.</p>
+          <label for="ck">Client key</label>
+          <input id="ck" placeholder="ck_live_…" autocomplete="off" spellcheck="false">
+          <label for="vapid">VAPID public key</label>
+          <input id="vapid" placeholder="B…" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="row">
+          <button id="go">Enable notifications</button>
+          <button class="ghost" id="reset" style="display:none">Start over</button>
+        </div>
+        <p class="msg" id="m1"></p>
+      </div>
+    </div>
+
+    <div class="step" id="s2" data-state="idle">
+      <h2><span class="num" id="n2">2</span> Send it</h2>
+      <p>We'll push this to the device you just subscribed, and nothing else.</p>
+      <div class="body">
+        <div class="preview">
+          <span class="ic"></span>
+          <div><b>It works 🎉</b><span>This notification came from Notibase.</span>
+            <small>notibase.com · now</small></div>
+        </div>
+        <div class="row"><button id="send">Send it to me</button></div>
+        <p class="msg" id="m2"></p>
+        <p class="hint" id="h2" style="display:none">
+          Nothing appeared? Notifications may be muted at the OS level — macOS Focus, Windows
+          Focus assist, or Do Not Disturb. The delivery itself succeeded.
+        </p>
+      </div>
+    </div>
+
+    <div class="step" id="s3" data-state="idle">
+      <h2><span class="num" id="n3">3</span> Do it from your own code</h2>
+      <p>That is the whole integration — a script tag and a service worker.</p>
+      <div class="body">
+<pre id="snippet">&lt;script src="__API__/sdk/notibase.js" defer&gt;&lt;/script&gt;
+&lt;script&gt;
+  window.notibaseDeferred = window.notibaseDeferred || [];
+  notibaseDeferred.push(function (nb) {
+    nb.init({ clientKey: "ck_live_…" });
+  });
+&lt;/script&gt;</pre>
+        <details style="margin-top:14px">
+          <summary>…and sending, from your server</summary>
+<pre id="curl">curl -X POST __API__/v1/messages \
+  -H "authorization: Bearer sk_live_…" \
+  -H "content-type: application/json" \
+  -d '{"audience":{"all":true},
+       "content":{"title":"Hello 👋","body":"Sent from your own server."}}'</pre>
+          <p class="hint">Server keys never go in a browser. That split is the publishable-key
+            model: the page can subscribe people, only your backend can message them.</p>
+        </details>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="cta-band">
+    <h3>Your turn.</h3>
+    <p>Free tier, no card. Web, iOS, Android, Flutter and Node.</p>
+    <a href="https://app.notibase.com"><button>Open the console →</button></a>
+  </div>
+
+  <p class="note">
+    Unsubscribing is one click in your browser's site settings, and we drop the subscription the
+    first time a send comes back rejected. Demo devices are cleared periodically.
+    <br><br>
+    Web push needs HTTPS and a browser that supports it — Chrome, Edge, Firefox, Opera, Safari 16+
+    on macOS, and Safari on iOS 16.4+ <em>only for sites added to the Home Screen</em>.
+  </p>
+</main>
+
+<footer><div class="wrap">
+  © 2026 Notibase · <a href="https://notibase.dev">Docs</a> ·
+  <a href="https://notibase.com/status.html">Status</a> ·
+  <a href="https://notibase.com">notibase.com</a>
+</div></footer>
+
+<script src="/sdk/notibase.js" defer></script>
+<script>
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  // The demo page is served from notibase.com but the API lives on its own
+  // host. Same-origin only holds when this file is opened from api.*, so ask
+  // the SDK where it resolved to rather than guessing.
+  var API = null;
+  var device = null;
+  var config = null;
+
+  function say(el, text, cls) {
+    var n = $(el); n.textContent = text; n.className = "msg" + (cls ? " " + cls : "");
+  }
+  function open_(id, done) {
+    $(id).dataset.state = "ready";
+    if (done) $(id).dataset.done = "1";
+  }
+
+  // The snippets live in the HTML above, so there is no escaping to get wrong
+  // — a script tag inside a JS string inside a script tag is a trap, and the
+  // first version of this fell into it. One substitution is all that is left.
+  function snippets() {
+    ["snippet", "curl"].forEach(function (id) {
+      var n = $(id);
+      n.textContent = n.textContent.split("__API__").join(API);
+    });
+  }
+
+  function unsupported(why) {
+    open_("s1");
+    say("m1", why, "bad");
+    $("go").disabled = true;
+  }
+
+  function boot(nb) {
+    API = nb.constructor.defaultApiUrl;
+    snippets();
+
+    fetch(API + "/v1/demo/config", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : { ready: false }; })
+      .catch(function () { return { ready: false }; })
+      .then(function (c) {
+        config = c;
+        // No demo app on this deployment → fall back to bring-your-own rather
+        // than showing a button that cannot work.
+        if (!c.ready) $("byo").style.display = "";
+      });
+
+    if (!("serviceWorker" in navigator) || !("PushManager" in window) ||
+        typeof Notification === "undefined") {
+      return unsupported("This browser doesn't support web push.");
+    }
+    if (Notification.permission === "denied") {
+      return unsupported("Notifications are blocked for this site. Allow them in your browser's " +
+        "site settings — a block can only be undone there, never from the page.");
+    }
+
+    $("go").onclick = async function () {
+      $("go").disabled = true;
+      try {
+        var clientKey = config && config.ready ? config.clientKey : $("ck").value.trim();
+        var vapid = config && config.ready ? config.vapidPublicKey : $("vapid").value.trim();
+        if (!clientKey || clientKey.indexOf("ck_") !== 0) {
+          throw new Error("That isn't a client key (ck_…). Server keys never belong in a browser.");
+        }
+        say("m1", "Asking your browser for permission…");
+        // This page lives under /sdk/, so the worker is beside it — the hosted
+        // config points at a customer's site root, which is right for them and
+        // wrong here. Getting this wrong fails silently: registration 404s and
+        // the only symptom is "permission wasn't granted".
+        await nb.init({
+          clientKey: clientKey,
+          apiUrl: API,
+          vapidPublicKey: vapid || undefined,
+          serviceWorkerPath: "/sdk/sw.js",
+          serviceWorkerScope: "/sdk/",
+          autoPrompt: false,
+        });
+        var res = await nb.promptForPush();
+        if (!res) {
+          throw new Error(Notification.permission === "denied"
+            ? "Permission was blocked. Undo it in your browser's site settings to try again."
+            : "Permission wasn't granted — nothing was stored.");
+        }
+        device = res.deviceId;
+        say("m1", "Subscribed. This browser is now a device on Notibase.", "ok");
+        $("go").style.display = "none";
+        $("reset").style.display = "";
+        open_("s1", true);
+        open_("s2");
+        $("s2").scrollIntoView({ behavior: "smooth", block: "nearest" });
+      } catch (e) {
+        say("m1", (e && e.message) || String(e), "bad");
+      } finally {
+        $("go").disabled = false;
+      }
+    };
+
+    $("reset").onclick = async function () {
+      try { await nb.unsubscribe("demo_reset"); } catch (e) { /* best effort */ }
+      location.reload();
+    };
+
+    $("send").onclick = async function () {
+      $("send").disabled = true;
+      say("m2", "Sending…");
+      try {
+        if (!config || !config.ready) {
+          throw new Error("Sending needs a server key, which can't live in a browser — " +
+            "use the curl command in step 3.");
+        }
+        var r = await fetch(API + "/v1/demo/send", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ device_id: device }),
+        });
+        if (!r.ok) throw new Error((await r.text()).slice(0, 160) || ("HTTP " + r.status));
+        say("m2", "Sent. It should appear within a second or two.", "ok");
+        $("h2").style.display = "";
+        open_("s2", true);
+        open_("s3");
+      } catch (e) {
+        say("m2", (e && e.message) || String(e), "bad");
+      } finally {
+        $("send").disabled = false;
+      }
+    };
+
+    open_("s1");
+  }
+
+  window.notibaseDeferred = window.notibaseDeferred || [];
+  window.notibaseDeferred.push(boot);
+})();
+</script>
+</body>
+</html>
